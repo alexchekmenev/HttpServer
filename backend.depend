@@ -1,0 +1,88 @@
+# depslib dependency file v1.0
+1417660226 source:/home/creed/work/cpp/backend/debug.cpp
+	"debug.h"
+
+1417220966 /home/creed/work/cpp/backend/debug.h
+	"headers.h"
+
+1417658594 /home/creed/work/cpp/backend/headers.h
+	<cstdio>
+	<sys/socket.h>
+	<sys/epoll.h>
+	<arpa/inet.h>
+	<cstdlib>
+	<cstring>
+	<string>
+	<unistd.h>
+	<netinet/in.h>
+	<fcntl.h>
+	<csignal>
+	<vector>
+	<algorithm>
+
+1417655597 source:/home/creed/work/cpp/backend/echo.cpp
+	"ioloop.h"
+	"echo.h"
+	"debug.h"
+
+1417660640 /home/creed/work/cpp/backend/ioloop.h
+	"headers.h"
+
+1417655461 /home/creed/work/cpp/backend/echo.h
+	"headers.h"
+	"handler.h"
+	"ioloop.h"
+
+1417228092 source:/home/creed/work/cpp/backend/hash_table.cpp
+	"hash_table.h"
+
+1417227848 /home/creed/work/cpp/backend/hash_table.h
+	"headers.h"
+
+1417660628 source:/home/creed/work/cpp/backend/ioloop.cpp
+	"ioloop.h"
+	"handler.h"
+	"debug.h"
+
+1417661057 source:/home/creed/work/cpp/backend/main.cpp
+	"ioloop.h"
+	"server.h"
+	"client.h"
+	"debug.h"
+
+1417658247 /home/creed/work/cpp/backend/server.h
+	"headers.h"
+	"ioloop.h"
+	"handler.h"
+	"client.h"
+
+1417651581 /home/creed/work/cpp/backend/handler.h
+	"headers.h"
+
+1417660011 source:/home/creed/work/cpp/backend/handler.cpp
+	"handler.h"
+
+1417660088 source:/home/creed/work/cpp/backend/server.cpp
+	"ioloop.h"
+	"handler.h"
+	"server.h"
+	"client.h"
+	"debug.h"
+
+1417661035 source:/home/creed/work/cpp/backend/client.cpp
+	"ioloop.h"
+	"handler.h"
+	"client.h"
+	"debug.h"
+
+1417660790 /home/creed/work/cpp/backend/client.h
+	"headers.h"
+	"handler.h"
+	"client.h"
+	"ioloop.h"
+
+1417657628 source:/home/creed/work/cpp/backend/storage.cpp
+	"storage.h"
+
+1417657638 /home/creed/work/cpp/backend/storage.h
+
