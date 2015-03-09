@@ -1,0 +1,108 @@
+int main(int argc, char *argv[]) {
+    int port = (argc >= 2 ? atoi(argv[1]) : DEFAULT_PORT);
+
+    Router* router = (new Router)->addRoute(Route("GET", "/favicon.ico"), [](Request* request)->Response*{
+        return (new Response())->setData("{\"message\":\"favicon.ico\"}");
+    })->addRoute(Route("GET", "/users"), [](Request* request)->Response*{
+        /*if (request->getHeader("X-CHAT-TOKEN") == "") {
+            return (new Response("{\"message\":\"Header: X-CHAT-TOKEN is absent\"}"));
+        }*/
+
+        std::vector<std::string> users = Chat::Instance()->getUsers();
+
+        std::string data = "[";
+        for(int i = 0; i < (int)users.size(); i++) {
+            if (i != 0) {
+                data = data + ',';
+            }
+            data = data + '"'+users[i]+'"';
+        }
+        data = data + ']';
+
+        return (new Response(data));
+    })->addRoute(Route("POST", "/users/add"), [](Request* request)->Response*{
+        std::string tmp = request->getData(), name = "";
+
+        int pos = tmp.find("name=");
+        if (pos == -1) {
+            return (new Response("{\"message\":\"Parameter: name is absent\"}"));
+        } else {
+            pos += 5;
+        }
+        while(pos < tmp.size() && tmp[pos] != '&') {
+            name += tmp[pos++];
+        }
+        if (name.empty()) {
+            return (new Response("{\"message\":\"Parameter: name is absent\"}"));
+        }
+
+        if (Chat::Instance()->addUser(name) == 0) {
+            return (new Response())->addHeader("X-CHAT-TOKEN: "+Chat::Instance()->getToken(name));
+        } else {
+            return (new Response("{\"message\":\"User already exists\"}"));
+        }
+    })->addRoute(Route("GET", "/messages"), [](Request* request)->Response*{
+        /*if (request->getHeader("X-CHAT-TOKEN") == "") {
+            return (new Response("{\"message\":\"Header: X-CHAT-TOKEN is absent\"}"));
+        }*/
+
+        std::vector<Message> messages = Chat::Instance()->getMessages();
+        std::string data = "[";
+        for(int i = 0; i < (int)messages.size(); i++) {
+            if (i != 0) data += ',';
+            data += "{\"sender\":\""+messages[i].sender+"\",\"data\":\""+messages[i].data+"\"}";
+        }
+        data += "]";
+
+        return (new Response(data));
+    })->addRoute(Route("POST", "/messages/add"), [](Request* request)->Response*{
+
+        /*if (request->getHeader("X-CHAT-TOKEN") == "") {
+            return (new Response("{\"message\":\"Header: X-CHAT-TOKEN is absent\"}"));
+        }*/
+
+        std::string tmp = request->getData();
+        std::string sender, data;
+
+        int pos = tmp.find("sender=");
+        if (pos == -1) {
+            return (new Response("{\"message\":\"Parameter: sender is absent\"}"));
+        } else {
+            pos += 7;
+        }
+        while(pos < tmp.size() && tmp[pos] != '&') {
+            sender += tmp[pos++];
+        }
+        if (sender.empty()) {
+            return (new Response("{\"message\":\"Parameter: sender is absent\"}"));
+        }
+
+        pos = tmp.find("data=");
+        if (pos == -1) {
+            return (new Response("{\"message\":\"Parameter: data is absent\"}"));
+        } else {
+            pos += 5;
+        }
+        while(pos < tmp.size() && tmp[pos] != '&') {
+            data += tmp[pos++];
+        }
+        if (data.empty()) {
+            return (new Response("{\"message\":\"Parameter: data is absent\"}"));
+        }
+
+        /*if (Chat::Instance()->getToken(sender) != request->getHeader("X-CHAT-TOKEN")) {
+            return (new Response("{\"message\":\"Header: X-CHAT-TOKEN is wrong\"}"));
+        }*/
+
+        Chat::Instance()->addMessage(Message(sender, data));
+        return (new Response());
+    });
+
+    std::function<void(Client*)> onNewClient = [](Client* client) {
+        printf("onNewClient: fd = %d\n", client->fd);
+    };
+
+    Server* server = new Server(port, onNewClient, router);
+    IOLoop::Instance()->start();
+    return 0;
+}
