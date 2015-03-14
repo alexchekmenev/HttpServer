@@ -49,7 +49,6 @@ int IO_Service::start() {
 
                 if (events[i].events == EPOLLIN) {
                     printf("EPOLLIN event in %d fd\n", socket->fd);
-                    //std::shared_ptr<std::string> ptr(new std::string());
                     socket->read_some([this, socket](const int& code, const int bytes_transferred)->void{
                         std::cout << "read bytes = " << bytes_transferred << std::endl;
                         std::cout << "read str = " << (*socket->buffer) << std::endl;
@@ -97,6 +96,12 @@ int IO_Service::set_http(std::function<void(buffer_ptr)> http) {
     this->http = http;
     return 0;
 }
+
+
+/*int IO_Service::set_http(http_ptr http) {
+    this->http = http;
+    return 0;
+}*/
 
 /* PRIVATE FUNCTIONS */
 

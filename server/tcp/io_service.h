@@ -26,6 +26,7 @@ public:
     int add_socket(socket_ptr socket);
     int set_server(server_ptr server);
     int set_http(std::function<void(buffer_ptr)> http);
+    //int set_http(http_ptr http);
 
 private:
     socket_ptr get_socket_by_fd(const int& fd);

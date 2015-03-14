@@ -24,23 +24,33 @@ int main(int argc, char* argv[]) {
 
         Http::http_ptr http(new Http());
 
-        //auto self(std::__enable_shared_from_this);
+        http->set_static_root("static/");
+
         io->set_http([http](Http::buffer_ptr buffer)->void{
-            printf("resolver start epfd = %d\n", http->);
             http->resolve(Request::request_ptr(new Request(buffer)));
         });
 
-        http->get("/", [](Request::request_ptr req, Response::response_ptr res)->void{
-            res->add_header("Server: nginx");
+        http->get("/users/add", [](Request::request_ptr req, Response::response_ptr res)->void{
             res->add_header("Connection: keep-alive");
-            res->add_header("Keep-Alive: timeout=10");
             res->add_header("Cache-Control: no-cache,no-store,max-age=0,must-revalidate");
 
-            std::string data = "{\"test\":\"test\"}";
+            std::string data = "{\"route\":\"123456789\"}";
             res->set_data(data);
-
-            printf("[RESPONSE]:  %s\n", res->to_buffer()->c_str());
         });
+
+        http->get("/", [http](Request::request_ptr req, Response::response_ptr res)->void{
+            res->set_content_type("text/html");
+            res->set_data(http->get_static_file("index.html"));
+        });
+        http->get("/js/jquery.js", [http](Request::request_ptr req, Response::response_ptr res)->void{
+            res->set_content_type("text/plain");
+            res->set_data(http->get_static_file("js/jquery.js"));
+        });
+        http->get("/js/scripts.js", [http](Request::request_ptr req, Response::response_ptr res)->void{
+            res->set_content_type("text/html");
+            res->set_data(http->get_static_file("js/scripts.js"));
+        });
+
 
         io->start();
     }

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "request.h"
 
 Request::Request(const buffer_ptr buffer) : buffer(buffer) {
@@ -30,7 +31,16 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
         else this->data += strs[0][i];
     }
 
-    printf("Request: method=%s, route=%s, data=%s\r\n", this->method.c_str(), this->route.c_str(), this->data.c_str());
+    std::vector<std::string> elems;
+    this->split(this->data, '&', elems);
+    for(int i = 0; i < (int)elems.size(); i++) {
+        std::vector<std::string> tuple;
+        this->split(elems[i], '=', tuple);
+        if (tuple.size() == 2) {
+            this->parameters[tuple[0]] = tuple[1];
+        }
+        //this->parameters.push_back(std::make_pair(tuple[0], tuple[1]));
+    }
 }
 
 std::string Request::get_route() {
@@ -57,4 +67,20 @@ std::string Request::get_data() {
 
 Request::buffer_ptr Request::get_buffer() {
     return buffer;
+}
+
+
+/* PRIVATE FUNCTIONS */
+
+std::vector<std::string> Request::split(const std::string s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+std::string Request::get_parameter(std::string parameter) {
+    return this->parameters[parameter];
 }
