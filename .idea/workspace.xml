@@ -1054,7 +1054,13 @@
       <option name="project" value="LOCAL" />
       <updated>1427318305749</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="without /static dir">
+      <created>1427318419740</created>
+      <option name="number" value="00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1427318419740</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1097,7 +1103,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="bugs with strange size of vector in Http fixed. Many changes in Request &amp; Response classes" />
     <MESSAGE value="server side fully completed with model Chat" />
-    <option name="LAST_COMMIT_MESSAGE" value="server side fully completed with model Chat" />
+    <MESSAGE value="without /static dir" />
+    <option name="LAST_COMMIT_MESSAGE" value="without /static dir" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
