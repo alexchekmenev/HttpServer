@@ -6,6 +6,5 @@
 #define ERROR_MESSAGE 1
 
 void log_error(const char *m, int level);
-void log_epoll_event(struct epoll_event e);
 
 #endif

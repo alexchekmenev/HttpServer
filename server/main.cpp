@@ -1,6 +1,6 @@
 #include <iostream>
-#include "tcp/io_service.h"
-#include "http/http.h"
+#include "application.h"
+#include "model/chat.h"
 
 using namespace std;
 
@@ -8,55 +8,96 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     int port = DEFAULT_PORT;
-    try
-    {
-        if (argc == 2) {
-            port = atoi(argv[1]);
-        } else if (argc > 2) {
-            cerr << "Usage: LiveChat <port>\n";
-            return 1;
-        }
-
-        cout << "LiveChat started on port " << port << endl;
-
-        IO_Service::io_service_ptr io(new IO_Service());
-        Server::server_ptr server(new Server(io, port));
-
-        Http::http_ptr http(new Http());
-
-        http->set_static_root("static/");
-
-        io->set_http([http](Http::buffer_ptr buffer)->void{
-            http->resolve(Request::request_ptr(new Request(buffer)));
-        });
-
-        http->get("/users/add", [](Request::request_ptr req, Response::response_ptr res)->void{
-            res->add_header("Connection: keep-alive");
-            res->add_header("Cache-Control: no-cache,no-store,max-age=0,must-revalidate");
-
-            std::string data = "{\"route\":\"123456789\"}";
-            res->set_data(data);
-        });
-
-        http->get("/", [http](Request::request_ptr req, Response::response_ptr res)->void{
-            res->set_content_type("text/html");
-            res->set_data(http->get_static_file("index.html"));
-        });
-        http->get("/js/jquery.js", [http](Request::request_ptr req, Response::response_ptr res)->void{
-            res->set_content_type("text/plain");
-            res->set_data(http->get_static_file("js/jquery.js"));
-        });
-        http->get("/js/scripts.js", [http](Request::request_ptr req, Response::response_ptr res)->void{
-            res->set_content_type("text/html");
-            res->set_data(http->get_static_file("js/scripts.js"));
-        });
-
-
-        io->start();
+    if (argc == 2) {
+        port = atoi(argv[1]);
+    } else if (argc > 2) {
+        cerr << "Usage: HttpServer <port>\n";
+        return 1;
     }
-    catch (exception& e)
-    {
-        cerr << "Exception: " << e.what() << "\n";
-    }
+
+    Application::application_ptr app(new Application(port));
+    app->set_root_dir("../");
+    app->set_static_dir("public/app/");
+
+    shared_ptr<Chat> chat(new Chat());
+
+    app->on_start([&](Http::http_ptr http)->void{
+
+        /* index files */
+        http->redirect("/", "index.html");
+
+        /* Users endpoints */
+        http->post("/users/add/", [&](Request::request_ptr req, Response::response_ptr res)->void{
+            User user(req->get_parameter("name"));
+            int id = chat->add_user(user);
+            string data;
+            if (id == -1) {
+                data = "{\"error\":\"User already exists\"}";
+            } else {
+                data = "{\"token\":\""+chat->get_token(user)+"\",\"id\":\""+std::to_string(id)+"\"}";
+            }
+            res->write(data);
+        });
+        http->get("/users/me/", [&](Request::request_ptr req, Response::response_ptr res)->void{
+            string token = req->get_parameter("token"), data;
+            int user_id = chat->get_user_id_by_token(token);
+            if (user_id == 0) {
+                data = "{\"error\":\"Wrong token\"}";
+            } else {
+                string name = chat->get_user_by_id(user_id).get_name();
+                data = "{\"user\":{\"name\":\""+name+"\"}}";
+            }
+            res->write(data);
+        });
+        http->get("/users/", [&](Request::request_ptr req, Response::response_ptr res)->void{
+            string token = req->get_parameter("token"), data;
+            int user_id = chat->get_user_id_by_token(token);
+            if (user_id != 0) {
+                vector<User> users = chat->get_users();
+                data = "[]";
+                for(int i = 0; i < (int)users.size(); i++) {
+                    data.insert(data.size() - 1, (string)(i>0?",":"")+users[i].to_json());
+                }
+                data = "{\"users\":"+data+"}";
+            } else {
+                data = "{\"error\":\"Wrong token\"}";
+            }
+            res->write(data);
+        });
+
+        /* Messages endpoints */
+        http->post("/messages/add/", [&](Request::request_ptr req, Response::response_ptr res)->void{
+            string token = req->get_parameter("token"), data;
+            int user_id = chat->get_user_id_by_token(token);
+            if (user_id != 0) {
+                User user = chat->get_user_by_id(user_id);
+                Message message(user.get_name(), req->get_parameter("data"));
+                chat->add_message(message);
+                data = "{}";
+            } else {
+                data = "{\"error\":\"Wrong token\"}";
+            }
+            res->write(data);
+        });
+
+        http->get("/messages/", [&](Request::request_ptr req, Response::response_ptr res)->void{
+            string token = req->get_parameter("token"), data;
+            int user_id = chat->get_user_id_by_token(token);
+            if (user_id != 0) {
+                vector <Message> messages = chat->get_messages();
+                data = "[]";
+                for(int i = 0; i < (int)messages.size(); i++) {
+                    data.insert(data.size() - 1, (string)(i>0?",":"")+messages[i].to_json());
+                }
+                data = "{\"messages\":"+data+"}";
+            } else {
+                data = "{\"error\":\"Wrong token\"}";
+            }
+            res->write(data);
+        });
+    });
+
+    app->start();
+
     return 0;
 }

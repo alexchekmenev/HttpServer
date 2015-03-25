@@ -11,7 +11,8 @@
 angular
   .module('tcpserverApp', [
     'ngResource',
-    'ngRoute'
+    'ngRoute',
+    'LocalStorageModule'
   ])
   .config(function ($routeProvider) {
     $routeProvider
@@ -26,4 +27,8 @@ angular
       .otherwise({
         redirectTo: '/'
       });
-  });
+  })
+  .config(function (localStorageServiceProvider) {
+    localStorageServiceProvider
+      .setPrefix('chat');
+  });;

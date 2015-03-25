@@ -40,26 +40,23 @@ int IO_Service::start() {
                 continue;
             }
             if (events[i].data.fd == server->_socket->fd) {
-                //printf("event in server fd\n");
                 if (server->accept1(socket) == -1) {
                     stop();
                 }
             } else {
-
-
                 if (events[i].events == EPOLLIN) {
-                    printf("EPOLLIN event in %d fd\n", socket->fd);
+                    //printf("EPOLLIN event in %d fd\n", socket->fd);
                     socket->read_some([this, socket](const int& code, const int bytes_transferred)->void{
-                        std::cout << "read bytes = " << bytes_transferred << std::endl;
-                        std::cout << "read str = " << (*socket->buffer) << std::endl;
+                        std::cout << " [io_service]: read bytes = " << bytes_transferred << std::endl;
+                        //std::cout << "read str = " << (*socket->buffer) << std::endl;
 
                         http(socket->buffer);
                     });
                 } else if (events[i].events == EPOLLOUT) {
-                    printf("EPOLLOUT event in %d fd\n", socket->fd);
+                    //printf("EPOLLOUT event in %d fd\n", socket->fd);
                     socket->write_some([socket](const int& code, const int bytes_transferred)->void{
-                        std::cout << "write bytes = " << bytes_transferred << std::endl;
-                        std::cout << "write str = " << (*socket->buffer) << std::endl;
+                        std::cout << " [io_service]: write bytes = " << bytes_transferred << std::endl;
+                        //std::cout << "write str = " << (*socket->buffer) << std::endl;
                     });
                 }
             }
@@ -73,7 +70,6 @@ void IO_Service::stop() {
 }
 
 int IO_Service::add_socket(Socket::socket_ptr socket) {
-    //printf("add_socket fd = %d\n", socket->fd);
     this->fd_to_socket[socket->fd] = (int)this->sockets.size();
     this->sockets.push_back(socket);
 
@@ -97,18 +93,10 @@ int IO_Service::set_http(std::function<void(buffer_ptr)> http) {
     return 0;
 }
 
-
-/*int IO_Service::set_http(http_ptr http) {
-    this->http = http;
-    return 0;
-}*/
-
 /* PRIVATE FUNCTIONS */
 
 Socket::socket_ptr IO_Service::get_socket_by_fd(const int& fd) {
-    //printf("fd=%d\n", fd);
     if (fd_to_socket.find(fd) != fd_to_socket.end()) {
-        //printf("index = %d\n", fd_to_socket[fd]);
         return sockets[fd_to_socket[fd]];
     }
     return nullptr;

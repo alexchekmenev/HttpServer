@@ -77,3 +77,13 @@ body {
     border-bottom: 0;
   }
 }
+
+.messages {
+  list-style-type: none;
+}
+.messages .sender {
+  font-weight: bold;
+}
+.messages .message {
+  font-style: italic;
+}

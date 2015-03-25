@@ -1,6 +1,7 @@
 #ifndef HEADERS_H
 #define HEADERS_H
 
+#include <iostream>
 #include <cstdio>
 #include <sys/socket.h>
 #include <sys/epoll.h>

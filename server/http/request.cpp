@@ -3,24 +3,46 @@
 
 Request::Request(const buffer_ptr buffer) : buffer(buffer) {
     std::vector<std::string> strs;
+
+    //std::cout << (*buffer) << std::endl;
+
     int pos, left = 0;
     while((pos = (*buffer).find("\r\n", left)) != -1) {
         std::string tmp = (*buffer).substr(left, pos - left);
         strs.push_back(tmp);
         if (tmp.size() > 0) {
-            this->headers.push_back(tmp);
+            headers.push_back(tmp);
         }
         left = pos + 2;
     }
     strs.push_back((*buffer).substr(left));
 
     if (strs[0].substr(0, 3) == "GET") {
-        this->method = "GET";
-        this->data = "";
+        method = "GET";
+        data = "";
     } else if (strs[0].substr(0, 4) == "POST") {
-        this->method = "POST";
-        this->data = strs.back();
+        method = "POST";
+        data = strs.back();
+
+        std::string tmp = (data.size() >= 2 ? data.substr(1, data.size() - 2) : "");
+        std::vector<std::string> elems;
+        split(tmp, ',', elems);
+        for(int i = 0; i < (int)elems.size(); i++) {
+            std::vector<std::string> tuple;
+            split(elems[i], ':', tuple);
+            if (tuple.size() == 2) {
+                if (tuple[0].size() >= 2) {
+                    tuple[0] = tuple[0].substr(1, tuple[0].size() - 2);
+                }
+                if (tuple[1].size() >= 2) {
+                    tuple[1] = tuple[1].substr(1, tuple[1].size() - 2);
+                }
+                std::cout << "TUPLE: " << tuple[0] << ": " << tuple[1] << std::endl;
+                this->parameters[tuple[0]] = tuple[1];
+            }
+        }
     }
+
     bool question = false;
     for(int i = this->method.size() + 1; strs[0][i] != ' '; i++) {
         if (strs[0][i] == '?') {
@@ -30,6 +52,9 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
         if (!question) this->route += strs[0][i];
         else this->data += strs[0][i];
     }
+    if (route.size() > 1 && this->route.back() == '/') {
+        this->route.pop_back();
+    }
 
     std::vector<std::string> elems;
     this->split(this->data, '&', elems);
@@ -37,9 +62,9 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
         std::vector<std::string> tuple;
         this->split(elems[i], '=', tuple);
         if (tuple.size() == 2) {
+            std::cout << tuple[0] << ": " << tuple[1] << std::endl;
             this->parameters[tuple[0]] = tuple[1];
         }
-        //this->parameters.push_back(std::make_pair(tuple[0], tuple[1]));
     }
 }
 
@@ -63,7 +88,6 @@ std::string Request::get_header(const std::string header) {
 std::string Request::get_data() {
     return this->data;
 }
-
 
 Request::buffer_ptr Request::get_buffer() {
     return buffer;

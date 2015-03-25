@@ -14,44 +14,43 @@ Socket::~Socket() {
 
 /* PUBLIC FUNCTIONS */
 
-void Socket::read_some(const buffer_ptr buffer, ReadHandler handler) {
+void Socket::read_some(const buffer_ptr buffer, Handler handler) {
     set_buffer(buffer);
     read_some(handler);
 }
-void Socket::read_some(ReadHandler handler) {
+void Socket::read_some(Handler handler) {
     buffer->clear();
     while(true) {
         ssize_t received = recv(fd, tmp, MAX_BUFFER_SIZE, 0);
-        if (received <= 0) {
-            //log_error("Error reading from socket", ERROR_MESSAGE);
+        if (received == -1) {
             handler(received, buffer->size());
             break;
+        } else if (received == 0) {
+            log_error("Error reading from socket", ERROR_MESSAGE);
+            break;
         } else {
-            //printf("appending %d bytes\n", (int)received);
             buffer->append(tmp, received);
         }
     }
     set_writable();
 }
 
-void Socket::write_some(const buffer_ptr buffer, WriteHandler handler) {
+void Socket::write_some(const buffer_ptr buffer, Handler handler) {
     set_buffer(buffer);
     write_some(handler);
 }
-void Socket::write_some(WriteHandler handler) {
+void Socket::write_some(Handler handler) {
     int ptr = 0;
     while(ptr < buffer->size()) {
-        int len = std::min(MAX_BUFFER_SIZE - 1, (int)buffer->size() - ptr);
+        int len = std::min(MAX_BUFFER_SIZE, (int)buffer->size() - ptr);
         strncpy(tmp, buffer->substr(ptr, len).c_str(), sizeof(tmp));
-        tmp[sizeof(tmp)] = 0;
-        if (send(fd, tmp, len + 1, 0) != len + 1) {
+        if (send(fd, tmp, len, 0) != len) {
             log_error("Could not write to stream", ERROR_MESSAGE);
-            handler(1, ptr);
+            handler(-1, ptr);
             break;
         }
         ptr += len;
     }
-    //set_readable();
     close_socket();
     handler(0, buffer->size());
 }
@@ -64,16 +63,16 @@ int Socket::set_nonblocking() {
     return fcntl(this->fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+/* PRIVATE FUNCTIONS */
+
 int Socket::close_socket() {
-    if (fd != 1) {
+    if (fd != -1) {
         close(fd);
         fd = -1;
         return 0;
     }
     return -1;
 }
-
-/* PRIVATE FUNCTIONS */
 
 Socket::buffer_ptr Socket::get_buffer() const {
     return this->buffer;

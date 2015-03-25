@@ -23,7 +23,6 @@ private:
     std::string method;
     std::vector<std::string> headers;
     std::map<std::string, std::string> parameters;
-    //std::vector< std::pair<std::string, std::string> > parameters;
 };
 
 #endif

@@ -1,23 +1,29 @@
-<div class="jumbotron">
-  <h1>'Allo, 'Allo!</h1>
-  <p class="lead">
-    <img src="images/yeoman.png" alt="I'm Yeoman"><br>
-    Always a pleasure scaffolding your apps.
-  </p>
-  <p><a class="btn btn-lg btn-success" ng-href="#">Splendid!<span class="glyphicon glyphicon-ok"></span></a></p>
-</div>
+<form ng-submit="saveUser()">
+  <label>Login: </label>
+  <input ng-model="user">
+  <input type="submit">
+</form>
 
-<div class="row marketing">
-  <h4>HTML5 Boilerplate</h4>
-  <p>
-    HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.
-  </p>
+<ul>
+  <li ng-repeat="user in users">{{ user.name }}</li>
+</ul>
 
-  <h4>Angular</h4>
-  <p>
-    AngularJS is a toolset for building the framework most suited to your application development.
-  </p>
 
-  <h4>Karma</h4>
-  <p>Spectacular Test Runner for JavaScript.</p>
-</div>
+
+<ul class="messages">
+  <li class="row" ng-repeat="message in messages">
+    <div class="col-xs-3 sender">
+      {{ message.sender }}
+    </div>
+    <div class="col-xs-9 message">
+      {{ message.data }}
+    </div>
+  </li>
+</ul>
+
+<form class="row" style="border-top-color: #b6b6b6; overflow: hidden">
+  <div class="col-xs-offset-3 col-xs-6">
+    <textarea ng-model="message" ng-enter="saveMessage()" style="width: 100%"></textarea>
+  </div>
+
+</form>
