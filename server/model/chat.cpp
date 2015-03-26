@@ -14,7 +14,6 @@ int Chat::add_user(const User& user) {
     if (id == 0) {
         std::string token = generate_token(8);
         ids[token] = max_id;
-        cout << "   NAME = " << name << endl;
         tokens.push_back(token);
         logins.push_back(name);
         return users[name] = max_id++;

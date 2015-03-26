@@ -3,7 +3,7 @@
 describe('Service: Config', function () {
 
   // load the service's module
-  beforeEach(module('tcpserverApp'));
+  beforeEach(module('chatApp'));
 
   // instantiate service
   var Config;

@@ -1,6 +1,3 @@
-//
-// Created by creed on 22.03.15.
-//
 #include "application.h"
 
 using namespace std;

@@ -1,29 +1,46 @@
-<form ng-submit="saveUser()">
-  <label>Login: </label>
-  <input ng-model="user">
-  <input type="submit">
-</form>
+<div class="container">
 
-<ul>
-  <li ng-repeat="user in users">{{ user.name }}</li>
-</ul>
+  <form class="form-signin text-center" ng-show="!isLogged" ng-submit="saveUser()">
+    <span style="font-size: 20px; font-weight: bold" class="form-signin-heading">Please enter your name</span>
+    <input class="form-control" placeholder="Your name" required autofocus ng-model="user">
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+  </form>
 
-
-
-<ul class="messages">
-  <li class="row" ng-repeat="message in messages">
-    <div class="col-xs-3 sender">
-      {{ message.sender }}
+  <div ng-show="isLogged">
+    <div class="row">
+      <div class="col-xs-9" style="border-right: 1px solid #d6d6d6">
+        <ul class="messages">
+          <li class="row" ng-repeat="message in messages">
+            <div class="col-xs-3 sender" ng-style="(message.sender == me.name ? {color: 'red'} : {})">
+              {{ message.sender }}
+            </div>
+            <div class="col-xs-9 message">
+              {{ message.data }}
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="col-xs-3">
+        <ul style="list-style-type: none">
+          <li ng-repeat="user in users">
+            {{ user.name }}
+            <a ng-click="logout()" ng-show="user.name == me.name">(logout)</a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="col-xs-9 message">
-      {{ message.data }}
-    </div>
-  </li>
-</ul>
 
-<form class="row" style="border-top-color: #b6b6b6; overflow: hidden">
-  <div class="col-xs-offset-3 col-xs-6">
-    <textarea ng-model="message" ng-enter="saveMessage()" style="width: 100%"></textarea>
+    <form class="row" style="border-top-color: #b6b6b6; overflow: hidden">
+      <div class="col-xs-9">
+        <div class="row">
+          <div class="col-xs-offset-3 col-xs-9">
+            <textarea ng-model="message" ng-enter="saveMessage()" style="width: 100%"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </form>
   </div>
 
-</form>
+</div> <!-- /container -->
+

@@ -2,11 +2,11 @@
 
 /**
  * @ngdoc directive
- * @name tcpserverApp.directive:ngEnter
+ * @name chatApp.directive:ngEnter
  * @description
  * # ngEnter
  */
-angular.module('tcpserverApp')
+angular.module('chatApp')
   .directive('ngEnter', function () {
     return function(scope, element, attrs) {
       element.bind("keydown keypress", function(event) {
@@ -14,6 +14,7 @@ angular.module('tcpserverApp')
           scope.$apply(function(){
             scope.$eval(attrs.ngEnter, {'event': event});
           });
+          element.val('');
           event.preventDefault();
         }
       });

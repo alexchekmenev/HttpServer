@@ -3,7 +3,7 @@
 describe('Directive: ngEnter', function () {
 
   // load the directive's module
-  beforeEach(module('tcpserverApp'));
+  beforeEach(module('chatApp'));
 
   var element,
     scope;

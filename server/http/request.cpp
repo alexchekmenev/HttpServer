@@ -3,9 +3,6 @@
 
 Request::Request(const buffer_ptr buffer) : buffer(buffer) {
     std::vector<std::string> strs;
-
-    //std::cout << (*buffer) << std::endl;
-
     int pos, left = 0;
     while((pos = (*buffer).find("\r\n", left)) != -1) {
         std::string tmp = (*buffer).substr(left, pos - left);
@@ -37,7 +34,7 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
                 if (tuple[1].size() >= 2) {
                     tuple[1] = tuple[1].substr(1, tuple[1].size() - 2);
                 }
-                std::cout << "TUPLE: " << tuple[0] << ": " << tuple[1] << std::endl;
+                //std::cout << "TUPLE: " << tuple[0] << ": " << tuple[1] << std::endl;
                 this->parameters[tuple[0]] = tuple[1];
             }
         }
@@ -62,7 +59,7 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
         std::vector<std::string> tuple;
         this->split(elems[i], '=', tuple);
         if (tuple.size() == 2) {
-            std::cout << tuple[0] << ": " << tuple[1] << std::endl;
+            //std::cout << tuple[0] << ": " << tuple[1] << std::endl;
             this->parameters[tuple[0]] = tuple[1];
         }
     }

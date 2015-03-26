@@ -2,12 +2,12 @@
 
 /**
  * @ngdoc service
- * @name tcpserverApp.Messages
+ * @name chatApp.Messages
  * @description
  * # Messages
- * Service in the tcpserverApp.
+ * Service in the chatApp.
  */
-angular.module('tcpserverApp')
+angular.module('chatApp')
   .service('Messages', ['$resource', 'Config', function ($resource, Config) {
     return $resource('/messages', {}, {
       add: {

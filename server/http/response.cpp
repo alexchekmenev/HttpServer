@@ -29,11 +29,6 @@ Response::buffer_ptr Response::to_buffer() {
     }
     result += "Content-Length: "+std::to_string(this->data.size()) + "\r\n";
 
-    /*for(int i = 0; i < (int)this->data.size(); i++) {
-        std::cout << "|"<<data[i]<<"|";
-    }
-    std::cout << std::endl;*/
-
     result += "\r\n"+data;
     buffer->clear();
     buffer->append(result);

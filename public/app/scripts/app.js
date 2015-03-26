@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc overview
- * @name tcpserverApp
+ * @name chatApp
  * @description
- * # tcpserverApp
+ * # chatApp
  *
  * Main module of the application.
  */
 angular
-  .module('tcpserverApp', [
+  .module('chatApp', [
     'ngResource',
     'ngRoute',
     'LocalStorageModule'
@@ -31,4 +31,4 @@ angular
   .config(function (localStorageServiceProvider) {
     localStorageServiceProvider
       .setPrefix('chat');
-  });;
+    });

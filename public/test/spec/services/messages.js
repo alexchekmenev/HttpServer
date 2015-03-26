@@ -3,7 +3,7 @@
 describe('Service: Messages', function () {
 
   // load the service's module
-  beforeEach(module('tcpserverApp'));
+  beforeEach(module('chatApp'));
 
   // instantiate service
   var Messages;

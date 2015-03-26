@@ -2,12 +2,12 @@
 
 /**
  * @ngdoc service
- * @name tcpserverApp.Config
+ * @name chatApp.Config
  * @description
  * # Config
- * Constant in the tcpserverApp.
+ * Constant in the chatApp.
  */
-angular.module('tcpserverApp')
+angular.module('chatApp')
   .constant('Config', {
     server: "",//http://localhost:"+this.port,
     port: 8030

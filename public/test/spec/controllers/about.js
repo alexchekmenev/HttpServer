@@ -3,7 +3,7 @@
 describe('Controller: AboutCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('tcpserverApp'));
+  beforeEach(module('chatApp'));
 
   var AboutCtrl,
     scope;

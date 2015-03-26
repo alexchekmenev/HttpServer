@@ -2,23 +2,55 @@
 
 /**
  * @ngdoc function
- * @name tcpserverApp.controller:MainCtrl
+ * @name chatApp.controller:MainCtrl
  * @description
  * # MainCtrl
- * Controller of the tcpserverApp
+ * Controller of the chatApp
  */
-angular.module('tcpserverApp')
+angular.module('chatApp')
   .controller('MainCtrl', ['$scope', 'Users', 'Messages', 'localStorageService', function ($scope, Users, Messages, localStorageService) {
-    $scope.users = [];
-    $scope.messages = [];
-
-    var token = localStorageService.get('token');
-    var K = 10;
+    angular.extend($scope, {
+      users: [],
+      massages: [],
+      countOnPage: 15,
+      me: {},
+      saveUser: function() {
+        Users.add({
+          name: $scope.user
+        }, function(response) {
+          if (angular.isDefined(response.error)) {
+            console.error("[users].add: " + response.error);
+          } else {
+            console.log("[users].add: user_id=" + response.id);
+            localStorageService.set('token', response.token);
+            $scope.isLogged = true;
+            load();
+          }
+        });
+      },
+      saveMessage: function() {
+        Messages.add({
+          data: $scope.message,
+          token: localStorageService.get('token')
+        }, function(response) {
+          if (angular.isDefined(response.error)) {
+            console.error("[messages].add: " + response.error);
+          } else {
+            console.log("[messages].add: message added");
+            getMessages();
+          }
+        });
+      },
+      isLogged: false,
+      logout: function() {
+        this.isLogged = false;
+        localStorageService.remove('token');
+      }
+    });
 
     var getUsers = function() {
-      var users = [];
       Users.get({
-        token: token
+        token: localStorageService.get('token')
       }, function(response) {
         if (angular.isDefined(response.error)) {
           console.error("[users].get: " + response.error);
@@ -29,51 +61,41 @@ angular.module('tcpserverApp')
       });
     };
 
+    var getMe = function() {
+      Users.me({
+        token: localStorageService.get('token')
+      }, function(response) {
+        if (angular.isDefined(response.error)) {
+          console.error("[users].me: " + response.error);
+        } else {
+          console.log("[users].me: me={name:" + response.user.name + '}');
+          $scope.isLogged = true;
+          $scope.me = response.user;
+        }
+      });
+    };
+
     var getMessages = function() {
-      var messages = [];
       Messages.get({
-        token: token
+        token: localStorageService.get('token')
       }, function(response) {
         if (angular.isDefined(response.error)) {
           console.error("[messages].get: " + response.error);
         } else {
           console.log("[messages].get: |messages|=" + response.messages.length);
-          $scope.messages = response.messages.slice(Math.max(0, response.messages.length - K));
+          var start = Math.max(0, response.messages.length - $scope.countOnPage);
+          $scope.messages = response.messages.slice(start);
         }
       });
     };
 
-    $scope.saveUser = function() {
-      Users.add({
-        name: $scope.user
-      }, function(response) {
-        if (angular.isDefined(response.error)) {
-          console.error("[users].add: " + response.error);
-        } else {
-          console.log("[users].add: user_id=" + response.id);
-          token = response.token;
-          localStorageService.set('token', token);
-          getUsers();
-        }
-      });
+    var load = function() {
+      getMe();
+      getUsers();
+      getMessages();
     };
 
-    $scope.saveMessage = function() {
-      Messages.add({
-        data: $scope.message,
-        token: token
-      }, function(response) {
-        if (angular.isDefined(response.error)) {
-          console.error("[messages].add: " + response.error);
-        } else {
-          console.log("[messages].add: message added");
-          getMessages();
-        }
-      });
-    };
-
-    getUsers();
-    getMessages();
+    load();
 
     setInterval(getUsers, 10000);
     setInterval(getMessages, 1000);
