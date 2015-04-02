@@ -9,13 +9,13 @@
 struct Socket;
 struct Server;
 
-struct IO_Service {
+struct IO_Service{
 public:
     friend struct Socket;
     friend struct Server;
     typedef std::shared_ptr<Socket> socket_ptr;
     typedef std::shared_ptr<IO_Service> io_service_ptr;
-    typedef std::shared_ptr<Server> server_ptr;
+    typedef Server* server_ptr;
     typedef std::shared_ptr<std::string> buffer_ptr;
 
     IO_Service();
@@ -24,9 +24,9 @@ public:
     void stop();
 
     int add_socket(socket_ptr socket);
+    int remove_socket(socket_ptr socket);
     int set_server(server_ptr server);
-    int set_http(std::function<void(buffer_ptr)> http);
-    //int set_http(http_ptr http);
+    int set_buffer_handler(std::function<void(buffer_ptr)> http);
 
 private:
     socket_ptr get_socket_by_fd(const int& fd);

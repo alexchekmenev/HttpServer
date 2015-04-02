@@ -12,6 +12,7 @@ public:
     typedef std::function<void(Request::request_ptr, Response::response_ptr)> RouteHandler;
 
     Http();
+    ~Http();
     void get(const std::string route, RouteHandler handler);
     void post(const std::string route, RouteHandler handler);
     void put(const std::string route, RouteHandler handler);

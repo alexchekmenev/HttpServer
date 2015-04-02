@@ -3,17 +3,24 @@
 
 /* CONSTRUCTORS & DESTRUCTOR */
 
-Http::Http() {}
+Http::Http() {
+    printf(" [http]\n");
+}
+Http::~Http() {
+    printf("~[http]\n");
+}
 
 /* PUBLIC FUNCTIONS */
 
 void Http::resolve(Request::request_ptr request) {
+    std::cout << "buffer = " << (*request->get_buffer()) << std::endl;
     request->get_buffer()->clear();
     Response::response_ptr response(new Response(request->get_buffer()));
     std::string route = request->get_route();
     while(redirects[route] != "") {
         route = redirects[route];
     }
+    std::cout << "route = " << route << std::endl;
     if (route != request->get_route()) {
         printf("`%s` redirects to `%s`\n", request->get_route().c_str(), route.c_str());
     }
@@ -95,7 +102,7 @@ void Http::set_root_dir(const std::string dir) {
 
 std::string Http::get_static_file(const std::string path) {
     std::string fs_path = (this->root_dir)+(this->static_dir)+path;
-    std::ifstream file(fs_path);
+    std::ifstream file(fs_path, std::ifstream::in | std::ifstream::binary);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return content;
 }
@@ -121,7 +128,7 @@ bool Http::is_file_exist(const std::string& name) {
 }
 
 void Http::file_to_response(const std::string path, Response::response_ptr res) {
-    std::ifstream file(path);
+    std::ifstream file(path, std::ifstream::in | std::ifstream::binary);
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     res->write(content);
 }

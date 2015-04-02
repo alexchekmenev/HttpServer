@@ -11,16 +11,21 @@ IO_Service::IO_Service() {
 
     epfd = epoll_create(MAX_EVENTS_COUNT);
     if (epfd == -1) {
-        log_error("Failed to create epoll", FATAL_ERROR);
+        //log_error("Failed to create epoll", FATAL_ERROR);
+        throw std::runtime_error("Failed to create epoll");
     }
-    Signaler::register_service(IO_Service::io_service_ptr(this));
-    signal(SIGINT, Signaler::signal_int);
-    signal(SIGABRT, Signaler::signal_abrt);
+
+    Signaler::register_service(this);
+    Signaler::register_signal(SIGINT, &Signaler::signal_int);
 }
 IO_Service::~IO_Service() {
     printf("~[io_service]\n");
 
-    sockets.clear();
+    Signaler::unregister_signal(SIGINT);
+
+    for(int i = 0; i < (int)sockets.size(); i++) {
+        remove_socket(sockets[i]);
+    }
 
     if (epfd != -1) {
         close(epfd);
@@ -41,7 +46,7 @@ int IO_Service::start() {
             }
             if (events[i].data.fd == server->_socket->fd) {
                 if (server->accept1(socket) == -1) {
-                    stop();
+                    //stop();
                 }
             } else {
                 if (events[i].events == EPOLLIN) {
@@ -50,7 +55,9 @@ int IO_Service::start() {
                         std::cout << " [io_service]: read bytes = " << bytes_transferred << std::endl;
                         //std::cout << "read str = " << (*socket->buffer) << std::endl;
 
-                        http(socket->buffer);
+                        if (socket->buffer->find("HTTP/1.1\r\n") != std::string::npos) {
+                            http(socket->buffer);
+                        }
                     });
                 } else if (events[i].events == EPOLLOUT) {
                     //printf("EPOLLOUT event in %d fd\n", socket->fd);
@@ -73,7 +80,7 @@ int IO_Service::add_socket(Socket::socket_ptr socket) {
     this->fd_to_socket[socket->fd] = (int)this->sockets.size();
     this->sockets.push_back(socket);
 
-    epoll_event event;
+    epoll_event event = {};
     event.data.fd = socket->fd;
     event.events = EPOLLIN;
     if (epoll_ctl(epfd, EPOLL_CTL_ADD, socket->fd, &event) < 0) {
@@ -83,12 +90,24 @@ int IO_Service::add_socket(Socket::socket_ptr socket) {
     return 0;
 }
 
+int IO_Service::remove_socket(IO_Service::socket_ptr socket) {
+    int fd = socket->fd;
+    int pos = fd_to_socket[fd];
+    int last_fd = sockets[sockets.size() - 1]->fd;
+    int last_pos = (int)sockets.size() - 1;
+    std::swap(sockets[pos], sockets[last_pos]);
+    fd_to_socket[fd] = -1;
+    fd_to_socket[last_fd] = pos;
+    sockets.pop_back();
+}
+
+
 int IO_Service::set_server(server_ptr server) {
     this->server = server;
     return 0;
 }
 
-int IO_Service::set_http(std::function<void(buffer_ptr)> http) {
+int IO_Service::set_buffer_handler(std::function<void(buffer_ptr)> http) {
     this->http = http;
     return 0;
 }
@@ -96,7 +115,7 @@ int IO_Service::set_http(std::function<void(buffer_ptr)> http) {
 /* PRIVATE FUNCTIONS */
 
 Socket::socket_ptr IO_Service::get_socket_by_fd(const int& fd) {
-    if (fd_to_socket.find(fd) != fd_to_socket.end()) {
+    if (fd_to_socket.find(fd) != fd_to_socket.end() || fd_to_socket[fd] == -1) {
         return sockets[fd_to_socket[fd]];
     }
     return nullptr;

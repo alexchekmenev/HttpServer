@@ -14,6 +14,7 @@ public:
     typedef std::shared_ptr<Application> application_ptr;
     typedef std::function<void(Http::http_ptr)> Handler;
     Application(int port);
+    ~Application();
     void on_start(Handler handler);
     void start();
     void stop();

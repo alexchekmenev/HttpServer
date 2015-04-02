@@ -34,7 +34,6 @@ Request::Request(const buffer_ptr buffer) : buffer(buffer) {
                 if (tuple[1].size() >= 2) {
                     tuple[1] = tuple[1].substr(1, tuple[1].size() - 2);
                 }
-                //std::cout << "TUPLE: " << tuple[0] << ": " << tuple[1] << std::endl;
                 this->parameters[tuple[0]] = tuple[1];
             }
         }

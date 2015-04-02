@@ -3,7 +3,7 @@
 
 /* CONSTRUCTORS & DESTRUCTOR */
 
-Socket::Socket(io_service_ptr _io, const int& fd, const sockaddr_in& addr) : io(_io), fd(fd), addr(addr) {
+Socket::Socket(io_service_ptr _io, const int& fd, const sockaddr_in& addr) : epfd(_io->epfd), fd(fd), addr(addr) {
     printf(" [socket]: fd = %d\n", fd);
     buffer = buffer_ptr(new std::string());
 }
@@ -20,19 +20,23 @@ void Socket::read_some(const buffer_ptr buffer, Handler handler) {
 }
 void Socket::read_some(Handler handler) {
     buffer->clear();
+    uint32_t mode = EPOLLOUT;
     while(true) {
         ssize_t received = recv(fd, tmp, MAX_BUFFER_SIZE, 0);
+        printf("received = %d\n", (int)received);
         if (received == -1) {
             handler(received, buffer->size());
             break;
         } else if (received == 0) {
-            log_error("Error reading from socket", ERROR_MESSAGE);
+            //log_error("Error reading from socket", ERROR_MESSAGE);
+            handler(received, buffer->size());
+            mode = 0;
             break;
         } else {
             buffer->append(tmp, received);
         }
     }
-    set_writable();
+    set_mode(mode);
 }
 
 void Socket::write_some(const buffer_ptr buffer, Handler handler) {
@@ -51,7 +55,7 @@ void Socket::write_some(Handler handler) {
         }
         ptr += len;
     }
-    close_socket();
+    set_mode(EPOLLIN);
     handler(0, buffer->size());
 }
 
@@ -82,23 +86,12 @@ void Socket::set_buffer(const Socket::buffer_ptr other) {
     this->buffer = other;
 }
 
-int Socket::set_readable() {
-    epoll_event event;
+int Socket::set_mode(uint32_t mode) {
+    epoll_event event = {};
     event.data.fd = fd;
-    event.events = EPOLLIN;
-    if (epoll_ctl(this->io->epfd, EPOLL_CTL_MOD, fd, &event) < 0) {
-        log_error("Failed to set_readable()", ERROR_MESSAGE);
-        return -1;
-    }
-    return 0;
-}
-
-int Socket::set_writable() {
-    epoll_event event;
-    event.data.fd = fd;
-    event.events = EPOLLOUT;
-    if (epoll_ctl(this->io->epfd, EPOLL_CTL_MOD, fd, &event) < 0) {
-        log_error("Failed to set_writable()", ERROR_MESSAGE);
+    event.events = mode;
+    if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) < 0) {
+        log_error("Failed to set_mode()", ERROR_MESSAGE);
         return -1;
     }
     return 0;

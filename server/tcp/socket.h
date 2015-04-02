@@ -32,14 +32,14 @@ private:
     buffer_ptr get_buffer() const;
     void set_buffer(const buffer_ptr other);
 
-    int set_readable();
-    int set_writable();
+    int set_mode(uint32_t mode);
 
     int fd;
     sockaddr_in addr;
     char tmp[MAX_BUFFER_SIZE];
     buffer_ptr buffer;
-    io_service_ptr io;
+    //io_service_ptr io;
+    int epfd;
 };
 
 #endif
